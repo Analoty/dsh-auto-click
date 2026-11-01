@@ -46,13 +46,6 @@ dsh plugin --profile desktop add dsh-auto-click
 dsh plugin --profile web add dsh-auto-click
 ```
 
-### 两个都要用
-
-```bash
-dsh plugin --profile desktop add dsh-auto-click
-dsh plugin --profile web     add dsh-auto-click
-```
-
 `add` 会做两件事，**不需要手动改配置**：
 
 1. 把包装进该 profile 的 `node_modules`；
@@ -79,25 +72,6 @@ dsh plugin --profile desktop add github:Analoty/dsh-auto-click
 ```bash
 dsh plugin --profile desktop remove dsh-auto-click
 dsh plugin --profile web     remove dsh-auto-click
-```
-
-### 安装时一直转圈？
-
-如果这个插件此前用**本地目录**安装过（依赖写成了 `link:`），`node_modules` 里会留下一个
-指向源码的目录联接。之后改用 npm 安装时，pnpm 无法写入那个位置，会把文件挪进
-`node_modules\.ignored` 并反复重试，界面就一直转圈。
-
-先移除那个联接再重装：
-
-```powershell
-# Windows：只删联接，不会动源码目录
-cmd /c rmdir "%USERPROFILE%\.dsh\profiles\desktop\node_modules\dsh-auto-click"
-```
-
-macOS / Linux：
-
-```bash
-rm ~/.dsh/profiles/desktop/node_modules/dsh-auto-click
 ```
 
 ## 结构
