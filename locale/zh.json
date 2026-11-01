@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "title": "Auto Click",
+    "description": "侧边栏里的文件：单击在侧边栏打开，Ctrl+单击用系统默认应用打开，右键弹出文件菜单（打开、打开方式、另存为、复制路径、复制文件内容、在资源管理器中打开）。「打开方式」直接调用系统自带的对话框。"
+  },
+  "menu.open": "打开文件",
+  "menu.openWith": "打开方式",
+  "menu.saveAs": "另存为…",
+  "menu.copyPath": "复制路径",
+  "menu.copyContents": "复制文件内容",
+  "menu.reveal": "在资源管理器中打开"
+}

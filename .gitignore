@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Editor and OS clutter
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and temporary files
+*.log
+npm-debug.log*
+*.tmp
+
+# Local verification scripts (kept out of the published package)
+_*.mjs
+_*.cjs
+_*.ps1

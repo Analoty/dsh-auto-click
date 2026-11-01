@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "title": "Auto Click",
+    "description": "Files in the sidebar: a plain click previews in the side panel, Ctrl+click opens with the desktop's default application, and a right click opens the file menu (open, open with, save as, copy path, copy contents, reveal). \"Open With\" calls the operating system's own chooser."
+  },
+  "menu.open": "Open File",
+  "menu.openWith": "Open With",
+  "menu.saveAs": "Save As…",
+  "menu.copyPath": "Copy Path",
+  "menu.copyContents": "Copy File Contents",
+  "menu.reveal": "Reveal in File Explorer"
+}
