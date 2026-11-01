@@ -29,6 +29,12 @@ open natively, right-click for a file menu.
 - 支持的操作系统：Windows（完整支持）、macOS（`打开方式` 走 `open -a`）、
   其他平台可用但"打开方式"会明确报告不支持
 
+## 效果展示
+
+在聊天中的文件链接上右键：
+
+![右键文件菜单](docs/screenshots/file-menu.png)
+
 ## 安装
 
 从 npm 安装。**桌面版和 `dsh web` 是两个独立的 profile，装在一个里不会出现在另一个里**，
