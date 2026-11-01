@@ -46,11 +46,6 @@ dsh plugin --profile desktop add dsh-auto-click
 dsh plugin --profile web add dsh-auto-click
 ```
 
-`add` 会做两件事，**不需要手动改配置**：
-
-1. 把包装进该 profile 的 `node_modules`；
-2. 把 `dsh-auto-click` 追加到该 profile `package.json` 的 `dsh.profile.bundles` 列表。
-
 装完后重启对应的进程（桌面版重启应用，`dsh web` 重启该命令）。
 
 > `dsh plugin` 的参数会原样透传给 pnpm，所以 `<spec>` 可以是 pnpm 接受的任何形式：
