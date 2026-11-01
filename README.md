@@ -62,6 +62,20 @@ dsh plugin --profile desktop add github:Analoty/dsh-auto-click
 dsh plugin --profile desktop remove dsh-auto-click
 ```
 
+### 桌面版和 `dsh web` 是两个独立的 profile
+
+DSH Desktop 使用 `--profile desktop`，而终端里的 `dsh web` 使用 `--profile web`。
+**两者各有自己的插件集合，装在一个里不会出现在另一个里。**
+
+如果两种方式都要用，各装一次：
+
+```bash
+dsh plugin --profile desktop add dsh-auto-click   # 桌面版
+dsh plugin --profile web     add dsh-auto-click   # 终端 dsh web
+```
+
+装完后重启对应的进程。
+
 ## 结构
 
 ```
