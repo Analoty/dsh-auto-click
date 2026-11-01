@@ -31,10 +31,10 @@ open natively, right-click for a file menu.
 
 ## 安装
 
-### 从 GitHub 安装（推荐）
+### 从 npm 安装（推荐）
 
 ```bash
-dsh plugin --profile desktop add github:Analoty/dsh-auto-click
+dsh plugin --profile desktop add dsh-auto-click
 ```
 
 `add` 会做两件事，**不需要手动改配置**：
@@ -44,11 +44,17 @@ dsh plugin --profile desktop add github:Analoty/dsh-auto-click
 
 装完后重启 DSH Desktop。
 
-> `dsh plugin` 的参数会原样透传给 pnpm，所以 `<spec>` 可以是 pnpm 接受的任何形式：
-> 包名、`包名@版本`、git 地址、本地 tarball 或本地目录。命令动词用 `add`。
+### 从 GitHub 安装
+
+```bash
+dsh plugin --profile desktop add github:Analoty/dsh-auto-click
+```
 
 本包是纯 JavaScript，没有 `prepare` 构建步骤，因此从 git 直装不会被 pnpm 的
 `allowBuilds` 策略拦下。
+
+> `dsh plugin` 的参数会原样透传给 pnpm，所以 `<spec>` 可以是 pnpm 接受的任何形式：
+> 包名、`包名@版本`、git 地址、本地 tarball 或本地目录。命令动词用 `add`。
 
 ### 从源码安装（开发用）
 
@@ -65,11 +71,6 @@ dsh plugin --profile desktop add E:/path/to/dsh-auto-click
 npm pack                                  # 生成 dsh-auto-click-0.1.0.tgz
 dsh plugin --profile desktop add ./dsh-auto-click-0.1.0.tgz
 ```
-
-### 关于 npm
-
-本包**尚未发布到 npm**，所以 `dsh plugin add dsh-auto-click` 目前还不能用。
-请使用上面的 GitHub 方式。
 
 ### 卸载
 
