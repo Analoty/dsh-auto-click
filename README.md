@@ -31,31 +31,44 @@ open natively, right-click for a file menu.
 
 ## 安装
 
-本插件是一个 DSH bundle 插件，通过 profile 的 `node_modules` 加载。
+### 从 npm 安装（推荐）
 
 ```bash
-# 1. 取得代码
+dsh plugin --profile desktop add dsh-auto-click
+```
+
+`add` 会做两件事，**不需要手动改配置**：
+
+1. 把包装进 profile 的 `node_modules`；
+2. 把 `dsh-auto-click` 追加到 profile `package.json` 的 `dsh.profile.bundles` 列表。
+
+装完后重启 DSH Desktop（或重新启用该插件）。
+
+> `dsh plugin` 的参数会原样透传给 pnpm，所以 `<spec>` 可以是 pnpm 接受的任何形式：
+> 包名、`包名@版本`、git 地址、本地 tarball 或本地目录。命令动词用 `add`
+> （`install` 也行，语义相同）。
+
+### 从源码安装（开发用）
+
+```bash
 git clone https://github.com/Analoty/dsh-auto-click.git
-
-# 2. 链接进 DSH profile（示例为 desktop profile）
-#    Windows 上建议用 junction，避免复制后改动不同步
-mklink /J "%USERPROFILE%\.dsh\profiles\desktop\node_modules\dsh-auto-click" "E:\path\to\dsh-auto-click"
-# macOS / Linux:
-# ln -s /path/to/dsh-auto-click ~/.dsh/profiles/desktop/node_modules/dsh-auto-click
-
-# 3. 在 bundle patch 中启用
+dsh plugin --profile desktop add E:/path/to/dsh-auto-click
 ```
 
-在 profile 的 `cordis.patch.yml` 中加入：
+用目录安装会得到 `link:` 依赖，改动源码后无需重装。
 
-```yaml
-- insert:
-    - id: auto-click
-      name: dsh-auto-click
-      config: {}
+### 从本地 tarball 安装
+
+```bash
+npm pack                                  # 生成 dsh-auto-click-0.1.0.tgz
+dsh plugin --profile desktop add ./dsh-auto-click-0.1.0.tgz
 ```
 
-然后重启 DSH Web GUI，或通过插件管理界面启用 `auto-click`。
+### 卸载
+
+```bash
+dsh plugin --profile desktop remove dsh-auto-click
+```
 
 ### 改动后为什么需要重新加载
 
@@ -64,7 +77,7 @@ mklink /J "%USERPROFILE%\.dsh\profiles\desktop\node_modules\dsh-auto-click" "E:\
 | `index.js`（Host 半） | 通过插件管理禁用再启用 `auto-click` |
 | `client.js`（Client 半） | 刷新页面（F5） |
 
-两者都不会自动热更新。
+两者都不会自动热更新。`pnpm run dev:web` 未运行时，即使 client 半改了也必须刷新。
 
 ## 结构
 
