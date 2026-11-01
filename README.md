@@ -31,20 +31,41 @@ open natively, right-click for a file menu.
 
 ## 安装
 
-### 从 npm 安装（推荐）
+从 npm 安装。**桌面版和 `dsh web` 是两个独立的 profile，装在一个里不会出现在另一个里**，
+按你使用的方式选择对应命令。
+
+### 桌面版（DSH Desktop）
 
 ```bash
 dsh plugin --profile desktop add dsh-auto-click
 ```
 
+### 终端 `dsh web`
+
+```bash
+dsh plugin --profile web add dsh-auto-click
+```
+
+### 两个都要用
+
+```bash
+dsh plugin --profile desktop add dsh-auto-click
+dsh plugin --profile web     add dsh-auto-click
+```
+
 `add` 会做两件事，**不需要手动改配置**：
 
-1. 把包装进 profile 的 `node_modules`；
-2. 把 `dsh-auto-click` 追加到 profile `package.json` 的 `dsh.profile.bundles` 列表。
+1. 把包装进该 profile 的 `node_modules`；
+2. 把 `dsh-auto-click` 追加到该 profile `package.json` 的 `dsh.profile.bundles` 列表。
 
-装完后重启 DSH Desktop。
+装完后重启对应的进程（桌面版重启应用，`dsh web` 重启该命令）。
+
+> `dsh plugin` 的参数会原样透传给 pnpm，所以 `<spec>` 可以是 pnpm 接受的任何形式：
+> 包名、`包名@版本` 或 git 地址。命令动词用 `add`。
 
 ### 从 GitHub 安装
+
+不经过 npm，直接从仓库安装：
 
 ```bash
 dsh plugin --profile desktop add github:Analoty/dsh-auto-click
@@ -53,28 +74,31 @@ dsh plugin --profile desktop add github:Analoty/dsh-auto-click
 本包是纯 JavaScript，没有 `prepare` 构建步骤，因此从 git 直装不会被 pnpm 的
 `allowBuilds` 策略拦下。
 
-> `dsh plugin` 的参数会原样透传给 pnpm，所以 `<spec>` 可以是 pnpm 接受的任何形式：
-> 包名、`包名@版本` 或 git 地址。命令动词用 `add`。
-
 ### 卸载
 
 ```bash
 dsh plugin --profile desktop remove dsh-auto-click
+dsh plugin --profile web     remove dsh-auto-click
 ```
 
-### 桌面版和 `dsh web` 是两个独立的 profile
+### 安装时一直转圈？
 
-DSH Desktop 使用 `--profile desktop`，而终端里的 `dsh web` 使用 `--profile web`。
-**两者各有自己的插件集合，装在一个里不会出现在另一个里。**
+如果这个插件此前用**本地目录**安装过（依赖写成了 `link:`），`node_modules` 里会留下一个
+指向源码的目录联接。之后改用 npm 安装时，pnpm 无法写入那个位置，会把文件挪进
+`node_modules\.ignored` 并反复重试，界面就一直转圈。
 
-如果两种方式都要用，各装一次：
+先移除那个联接再重装：
+
+```powershell
+# Windows：只删联接，不会动源码目录
+cmd /c rmdir "%USERPROFILE%\.dsh\profiles\desktop\node_modules\dsh-auto-click"
+```
+
+macOS / Linux：
 
 ```bash
-dsh plugin --profile desktop add dsh-auto-click   # 桌面版
-dsh plugin --profile web     add dsh-auto-click   # 终端 dsh web
+rm ~/.dsh/profiles/desktop/node_modules/dsh-auto-click
 ```
-
-装完后重启对应的进程。
 
 ## 结构
 
