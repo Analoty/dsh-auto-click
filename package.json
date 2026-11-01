@@ -1,6 +1,6 @@
 {
   "name": "dsh-auto-click",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "type": "module",
   "description": "左侧栏中选择文件的方式：单击在侧边栏打开、Ctrl+单击用系统默认应用打开、右键弹出完整的文件菜单。",
   "keywords": [
