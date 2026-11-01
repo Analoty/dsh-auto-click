@@ -54,38 +54,13 @@ dsh plugin --profile desktop add github:Analoty/dsh-auto-click
 `allowBuilds` 策略拦下。
 
 > `dsh plugin` 的参数会原样透传给 pnpm，所以 `<spec>` 可以是 pnpm 接受的任何形式：
-> 包名、`包名@版本`、git 地址、本地 tarball 或本地目录。命令动词用 `add`。
-
-### 从源码安装（开发用）
-
-```bash
-git clone https://github.com/Analoty/dsh-auto-click.git
-dsh plugin --profile desktop add E:/path/to/dsh-auto-click
-```
-
-用目录安装会得到 `link:` 依赖，改动源码后无需重装。
-
-### 从本地 tarball 安装
-
-```bash
-npm pack                                  # 生成 dsh-auto-click-0.1.0.tgz
-dsh plugin --profile desktop add ./dsh-auto-click-0.1.0.tgz
-```
+> 包名、`包名@版本` 或 git 地址。命令动词用 `add`。
 
 ### 卸载
 
 ```bash
 dsh plugin --profile desktop remove dsh-auto-click
 ```
-
-### 改动后为什么需要重新加载
-
-| 改动位置 | 生效方式 |
-|---|---|
-| `index.js`（Host 半） | 通过插件管理禁用再启用 `auto-click` |
-| `client.js`（Client 半） | 刷新页面（F5） |
-
-两者都不会自动热更新。`pnpm run dev:web` 未运行时，即使 client 半改了也必须刷新。
 
 ## 结构
 
