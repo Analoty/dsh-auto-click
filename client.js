@@ -27,6 +27,16 @@ window.__ModuleLoader__.load({
     /** A file resource link, wherever the page renders one. */
     const LINK_SELECTOR = 'a[href^="dsh-resource://file/"]'
 
+    /**
+     * Any ordinary hyperlink: an `http(s)` address, a `mailto:`, or a relative
+     * URL the page renders as an anchor.
+     *
+     * A file resource address is EXCLUDED here even though it is also an anchor,
+     * because it is a file first — `candidateOf` handles it above this selector
+     * and it gets the full file menu, not the one-row link menu.
+     */
+    const HYPERLINK_SELECTOR = 'a[href]'
+
     /** Clickable controls that may NAME a path: chat file mentions, file chips. */
     const CONTROL_SELECTOR = 'button, a, [role="button"]'
 
@@ -94,6 +104,7 @@ window.__ModuleLoader__.load({
         'menu.copyPath': '复制路径',
         'menu.copyContents': '复制文件内容',
         'menu.reveal': '在资源管理器中打开',
+        'menu.copyLink': '复制链接',
         'error.openWith': '无法打开“打开方式”：{path}',
         'error.open': '无法打开：{path}',
         'error.reveal': '无法在资源管理器中显示：{path}',
@@ -108,6 +119,7 @@ window.__ModuleLoader__.load({
         'menu.copyPath': 'Copy Path',
         'menu.copyContents': 'Copy File Contents',
         'menu.reveal': 'Reveal in File Explorer',
+        'menu.copyLink': 'Copy Link',
         'error.openWith': 'Could not show "Open with": {path}',
         'error.open': 'Could not open: {path}',
         'error.reveal': 'Could not reveal: {path}',
@@ -178,6 +190,17 @@ window.__ModuleLoader__.load({
         const title = control.getAttribute('title')
         if (looksLikePath(title)) {
           return { path: stripMention(title), kind: 'file', element: control }
+        }
+      }
+
+      // An ordinary hyperlink is not a file: it gets the one-row link menu. This
+      // is checked LAST so a file mention rendered as an anchor keeps its full
+      // file menu, which is the more useful of the two.
+      const hyperlink = element.closest(HYPERLINK_SELECTOR)
+      if (hyperlink !== null) {
+        const href = hyperlink.getAttribute('href')
+        if (typeof href === 'string' && href.trim() !== '' && !href.startsWith('#')) {
+          return { path: undefined, kind: 'link', href, element: hyperlink }
         }
       }
       return undefined
@@ -618,7 +641,7 @@ window.__ModuleLoader__.load({
          * @param y - click Y.
          */
         const showMenu = (path, info, x, y) => {
-          store.set({ menu: { path, info, x, y } })
+          store.set({ menu: { kind: 'file', path, info, x, y } })
           void infoOf(path, true).then(
             (fresh) => {
               const current = store.snapshot().menu
@@ -627,6 +650,22 @@ window.__ModuleLoader__.load({
             },
             () => undefined,
           )
+        }
+
+        /**
+         * Show the one-row menu for an ordinary hyperlink.
+         *
+         * No Host round trip is involved: the address is already on the element,
+         * so the menu paints synchronously and "copy link" cannot fail for a
+         * reason the user cannot see. The URL is copied VERBATIM, including a
+         * relative one — resolving it against the page origin would produce an
+         * address the author never wrote.
+         * @param href - the `href` exactly as the page holds it.
+         * @param x - click X.
+         * @param y - click Y.
+         */
+        const showLinkMenu = (href, x, y) => {
+          store.set({ menu: { kind: 'link', href, path: undefined, info: undefined, x, y } })
         }
 
         /**
@@ -655,6 +694,10 @@ window.__ModuleLoader__.load({
           if (event.ctrlKey !== true && event.metaKey !== true) return
           const candidate = candidateOf(event.target)
           if (candidate === undefined || candidate.kind === 'directory') return
+          // An ordinary hyperlink is not a file: leave Ctrl+click to the page so
+          // the browser's own "open in a new tab" keeps working. Claiming it here
+          // would swallow the default and do nothing, since there is no path.
+          if (candidate.kind !== 'file') return
 
           // Claim the click now, while it is still cancellable.
           event.preventDefault()
@@ -681,6 +724,19 @@ window.__ModuleLoader__.load({
         const onContextMenu = (event) => {
           const candidate = candidateOf(event.target)
           if (candidate === undefined) return
+
+          // A plain hyperlink gets a one-row menu. The browser's own menu is
+          // replaced here on purpose: copying an address out of it is the single
+          // thing people do with a link in this UI, and the native menu offers no
+          // "copy link" at all.
+          if (candidate.kind === 'link') {
+            event.preventDefault()
+            event.stopPropagation()
+            if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation()
+            showLinkMenu(candidate.href, event.clientX, event.clientY)
+            return
+          }
+
           if (candidate.kind === 'directory') return
 
           const known = cachedInfo(candidate.path)
@@ -802,7 +858,20 @@ window.__ModuleLoader__.load({
           }
 
           const rows = []
-          if (menu !== null) {
+          if (menu !== null && menu.kind === 'link') {
+            // A hyperlink has exactly one useful action here. Everything else the
+            // file menu offers (open natively, reveal, save a copy) does not apply
+            // to an address that may not even point at a local file.
+            rows.push(menuRow({
+              id: 'copyLink',
+              label: t('menu.copyLink'),
+              icon: ICON.copy(),
+              onSelect: choose(() => copyText(menu.href).then(
+                (ok) => { if (ok !== true) notify(t('error.copy')) },
+                () => notify(t('error.copy')),
+              )),
+            }))
+          } else if (menu !== null) {
             rows.push(menuRow({
               id: 'open',
               label: t('menu.open'),

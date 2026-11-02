@@ -8,5 +8,6 @@
   "menu.saveAs": "另存为…",
   "menu.copyPath": "复制路径",
   "menu.copyContents": "复制文件内容",
-  "menu.reveal": "在资源管理器中打开"
+  "menu.reveal": "在资源管理器中打开",
+  "menu.copyLink": "复制链接"
 }

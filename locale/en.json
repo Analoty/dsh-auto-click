@@ -8,5 +8,6 @@
   "menu.saveAs": "Save As…",
   "menu.copyPath": "Copy Path",
   "menu.copyContents": "Copy File Contents",
-  "menu.reveal": "Reveal in File Explorer"
+  "menu.reveal": "Reveal in File Explorer",
+  "menu.copyLink": "Copy Link"
 }
