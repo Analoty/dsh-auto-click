@@ -174,23 +174,92 @@ async function resolveTarget(ctx, requested, workspaceRoot) {
  * The workspace root of one Session, read from the Host's own Session list.
  *
  * The page names the Session it is showing; the root that resolves its relative
- * paths is that Session's header `cwd`, exactly the base DSH's own file links
- * use.
+ * paths is that Session's working directory, exactly the base DSH's own file
+ * links use.
+ *
+ * DSH 0.2.2-rc.1 REMOVED `sessionController.inspect()`, which is what earlier
+ * versions answered this question with. Reading `inspection.meta.cwd` therefore
+ * produced `undefined` on every call, so every workspace-relative path — which
+ * is every path a tree row or a chat file link names — was refused with
+ * `path/unresolved`, and the plugin's gestures stopped doing anything.
+ *
+ * The surviving public reads are tried in order, most specific first:
+ *
+ * 1. `sessionQuery.observeSession()` → `projections.values.workingDirectory`.
+ *    This is the value the Host's own consumers use (the skill catalog is built
+ *    on exactly this chain), and it follows a changed working directory rather
+ *    than the immutable header.
+ * 2. `sessionController.projections({ sessionId })` → a sequenced baseline of
+ *    the same projection over the Remote surface.
+ * 3. `sessionController.list()` → the row's `cwd`, which every list item
+ *    carries (`listFields`), for a deployment whose projections are deferred.
+ *
+ * All three are optional services in a composition, so a failure falls through
+ * to the next instead of failing the request.
  * @param ctx - Host context.
  * @param sessionId - the Session the page named, when it named one.
  * @returns the root, or `undefined` when it is unknown.
  */
 async function workspaceRootOf(ctx, sessionId) {
   if (typeof sessionId !== 'string' || sessionId === '') return undefined
+  const usable = (value) => (typeof value === 'string' && value !== '' ? value : undefined)
+
+  // 1. The projected working directory: the base the Host itself resolves against.
   try {
-    const controller = ctx.get('sessionController')
-    if (controller === undefined || typeof controller.inspect !== 'function') return undefined
-    const inspection = await controller.inspect(sessionId)
-    const root = inspection?.meta?.cwd
-    return typeof root === 'string' && root !== '' ? root : undefined
+    const query = ctx.get('sessionQuery')
+    if (query !== undefined && typeof query.observeSession === 'function') {
+      const observation = await query.observeSession(sessionId)
+      try {
+        const root = usable(observation?.projections?.values?.workingDirectory) ?? usable(observation?.header?.cwd)
+        if (root !== undefined) return root
+      } finally {
+        // The observation is a caller-owned lease (a synchronous `Symbol.dispose`,
+        // not `asyncDispose`); releasing it drops the cold preparation it retains.
+        try {
+          observation?.[Symbol.dispose]?.()
+        } catch {
+          // A lease that refuses release is not a resolution failure.
+        }
+      }
+    }
   } catch {
-    return undefined
+    // Fall through to the Remote surface below.
   }
+
+  const controller = (() => {
+    try {
+      return ctx.get('sessionController')
+    } catch {
+      return undefined
+    }
+  })()
+  if (controller === undefined) return undefined
+
+  // 2. The same projection over the Session controller's Remote surface.
+  try {
+    if (typeof controller.projections === 'function') {
+      const baseline = await controller.projections({ sessionId }, new AbortController().signal)
+      const root = usable(baseline?.values?.workingDirectory)
+      if (root !== undefined) return root
+    }
+  } catch {
+    // Fall through to the list row below.
+  }
+
+  // 3. The list row's `cwd`: present for every visible Session.
+  try {
+    if (typeof controller.list === 'function') {
+      const listed = await controller.list({}, new AbortController().signal)
+      const items = Array.isArray(listed?.items) ? listed.items : []
+      const row = items.find((item) => item?.sessionId === sessionId)
+      const root = usable(row?.cwd) ?? usable(row?.projections?.values?.workingDirectory)
+      if (root !== undefined) return root
+    }
+  } catch {
+    // An unreadable list leaves the root unknown, and relative paths stay refused.
+  }
+
+  return undefined
 }
 
 /**
